@@ -1,6 +1,6 @@
 "use strict";
 
-const bashar = {
+const b = {
 
 	lexicon: {
 
@@ -21,70 +21,78 @@ const bashar = {
 	},
 
 	initAllScripts: function() {
-		bashar.header.initHeaderScripts();
-		bashar.main.initMainScripts();
+		b.header.initHeaderScripts();
+		b.main.initMainScripts();
 	},
 
 	header: {
 		initHeaderScripts: function() {
-			bashar.header.trackCursorY();
+			if (!b.lexicon.header
+			    || !b.lexicon.graphic
+			    || !b.lexicon.stStop
+			    || !b.lexicon.spZone
+			    || !b.lexicon.sparkle
+			) {
+				return;
+			}
+			b.header.trackCursorY();
 		},
 		trackCursorY: function() {
 			window.addEventListener("mousemove", (event) => {
-				if (!bashar.util.queryMedia("(any-hover: hover)")) { return; }
-				if (bashar.util.queryMedia("(prefers-reduced-motion: reduce)")) { return; }
+				if (!b.util.queryMedia("(any-hover: hover)")) { return; }
+				if (b.util.queryMedia("(prefers-reduced-motion: reduce)")) { return; }
 				let cursorYPos = event.clientY;
-				let headerOffsetTop = bashar.lexicon.header.getBoundingClientRect().top;
-				let headerHeight = bashar.lexicon.header.clientHeight;
+				let headerOffsetTop = b.lexicon.header.getBoundingClientRect().top;
+				let headerHeight = b.lexicon.header.clientHeight;
 				let cursorYRatio = (cursorYPos - headerOffsetTop) / headerHeight;
-				let clampedCursorYRatio = bashar.util.clamp(0, cursorYRatio, 1);
-				bashar.header.reportCursorY(clampedCursorYRatio);
+				let clampedCursorYRatio = b.util.clamp(0, cursorYRatio, 1);
+				b.header.reportCursorY(clampedCursorYRatio);
 			}, { passive: true });
 		},
 		reportCursorY: function(clampedCursorYRatio) {
-			bashar.header.opacifyStops(clampedCursorYRatio);
-			bashar.header.offsetStops(clampedCursorYRatio);
-			bashar.header.shiftSpZone(clampedCursorYRatio);
+			b.header.opacifyStops(clampedCursorYRatio);
+			b.header.offsetStops(clampedCursorYRatio);
+			b.header.shiftSpZone(clampedCursorYRatio);
 		},
 		opacifyStops: function(clampedCursorYRatio) {
-			let opacificationRate = bashar.util.parabola(-4, clampedCursorYRatio, -0.5, 1);
-			bashar.lexicon.flStop.setAttribute("stop-opacity", opacificationRate);
-			bashar.lexicon.stStop.setAttribute("stop-opacity", opacificationRate);
+			let opacificationRate = b.util.parabola(-4, clampedCursorYRatio, -0.5, 1);
+			b.lexicon.flStop.setAttribute("stop-opacity", opacificationRate);
+			b.lexicon.stStop.setAttribute("stop-opacity", opacificationRate);
 		},
 		offsetStops: function(clampedCursorYRatio) {
 			let offsettingRate = parseInt(clampedCursorYRatio * 100) + "%";
-			bashar.lexicon.flStop.setAttribute("offset", offsettingRate);
-			bashar.lexicon.stStop.setAttribute("offset", offsettingRate);
+			b.lexicon.flStop.setAttribute("offset", offsettingRate);
+			b.lexicon.stStop.setAttribute("offset", offsettingRate);
 		},
 		shiftSpZone: function(clampedCursorYRatio) {
-			let spZoneHalfHeight = parseFloat(bashar.lexicon.spZone.getAttribute("height")) / 2;
+			let spZoneHalfHeight = parseFloat(b.lexicon.spZone.getAttribute("height")) / 2;
 			let shiftingRate = parseInt(clampedCursorYRatio * 100) - spZoneHalfHeight + "%";
-			bashar.lexicon.spZone.setAttribute("y", shiftingRate);
-			bashar.header.proposeSparkle(clampedCursorYRatio);
+			b.lexicon.spZone.setAttribute("y", shiftingRate);
+			b.header.proposeSparkle(clampedCursorYRatio);
 		},
 		proposeSparkle: function(clampedCursorYRatio) {
 			let minSparkleRangeX =
-				parseFloat(bashar.lexicon.spZone.getAttribute("x")) / 100
-				* parseFloat(bashar.lexicon.graphic.getAttribute("width"));
+				parseFloat(b.lexicon.spZone.getAttribute("x")) / 100
+				* parseFloat(b.lexicon.graphic.getAttribute("width"));
 			let maxSparkleRangeX =
-				parseFloat(bashar.lexicon.spZone.getAttribute("width")) / 100
-				* parseFloat(bashar.lexicon.graphic.getAttribute("width"))
+				parseFloat(b.lexicon.spZone.getAttribute("width")) / 100
+				* parseFloat(b.lexicon.graphic.getAttribute("width"))
 				+ minSparkleRangeX;
 			let minSparkleRangeY =
-				parseFloat(bashar.lexicon.spZone.getAttribute("y")) / 100
-				* parseFloat(bashar.lexicon.graphic.getAttribute("height"));
+				parseFloat(b.lexicon.spZone.getAttribute("y")) / 100
+				* parseFloat(b.lexicon.graphic.getAttribute("height"));
 			let maxSparkleRangeY =
-				parseFloat(bashar.lexicon.spZone.getAttribute("height")) / 100
-				* parseFloat(bashar.lexicon.graphic.getAttribute("height"))
+				parseFloat(b.lexicon.spZone.getAttribute("height")) / 100
+				* parseFloat(b.lexicon.graphic.getAttribute("height"))
 				+ minSparkleRangeY;
-			let sparkleX = bashar.util.randomIntBetween(minSparkleRangeX, maxSparkleRangeX);
-			let sparkleY = bashar.util.randomIntBetween(minSparkleRangeY, maxSparkleRangeY);
-			bashar.header.validateSparkle(sparkleX, sparkleY, clampedCursorYRatio);
+			let sparkleX = b.util.randomIntBetween(minSparkleRangeX, maxSparkleRangeX);
+			let sparkleY = b.util.randomIntBetween(minSparkleRangeY, maxSparkleRangeY);
+			b.header.validateSparkle(sparkleX, sparkleY, clampedCursorYRatio);
 		},
 		validateSparkle: function(sparkleX, sparkleY, clampedCursorYRatio) {
 			let validSparkle = false;
-			let validationZones = bashar.lexicon.graphic.querySelectorAll("#g > *");
-			let validationPoint = bashar.lexicon.graphic.createSVGPoint();
+			let validationZones = b.lexicon.graphic.querySelectorAll("#g > *");
+			let validationPoint = b.lexicon.graphic.createSVGPoint();
 			validationPoint.x = sparkleX;
 			validationPoint.y = sparkleY;
 			validationZones.forEach((validationZone) => {
@@ -93,22 +101,22 @@ const bashar = {
 				}
 			});
 			if (!validSparkle) { return; }
-			bashar.header.acceptSparkle(sparkleX, sparkleY, clampedCursorYRatio);
+			b.header.acceptSparkle(sparkleX, sparkleY, clampedCursorYRatio);
 		},
 		acceptSparkle: function(sparkleX, sparkleY, clampedCursorYRatio) {
-			let opacity = bashar.util.parabola(-4, clampedCursorYRatio, -0.5, 1);
-			var scale = bashar.util.clamp(
+			let opacity = b.util.parabola(-4, clampedCursorYRatio, -0.5, 1);
+			var scale = b.util.clamp(
 				0,
-				bashar.util.randomFloatBetween(opacity - 0.25, opacity + 0.25),
+				b.util.randomFloatBetween(opacity - 0.25, opacity + 0.25),
 				1.25
 			);
-			if (bashar.util.queryMedia("(max-width: 768px)")) {
+			if (b.util.queryMedia("(max-width: 768px)")) {
 				scale = scale * 1.5;
 			}
-			bashar.lexicon.sparkle.setAttribute("fill-opacity", opacity);
-			bashar.lexicon.sparkle.setAttribute("stroke-opacity", opacity);
+			b.lexicon.sparkle.setAttribute("fill-opacity", opacity);
+			b.lexicon.sparkle.setAttribute("stroke-opacity", opacity);
 			if(clampedCursorYRatio >= 1 || clampedCursorYRatio <= 0) { return; }
-			bashar.lexicon.sparkle.setAttribute(
+			b.lexicon.sparkle.setAttribute(
 				"transform",
 					"translate(" + sparkleX + ", " + sparkleY + ")"
 					+ " scale(" + scale + ")"
@@ -119,20 +127,20 @@ const bashar = {
 
 	main: {
 		initMainScripts: function() {
-			bashar.main.displayJsOnly();
-			// bashar.main.disableFolioAnchors();
-			// bashar.main.distributeNotes();
-			// bashar.main.trackNotes();
+			b.main.displayJsOnly();
+			// b.main.disableFolioAnchors();
+			// b.main.distributeNotes();
+			// b.main.trackNotes();
 		},
 		displayJsOnly: function() {
-			if (!bashar.lexicon.jsOnly) { return; }
-			bashar.lexicon.jsOnly.forEach((jsOnly) => {
+			if (!b.lexicon.jsOnly) { return; }
+			b.lexicon.jsOnly.forEach((jsOnly) => {
 				jsOnly.classList.remove("generic--jsOnly");
 			});
 		},
 		// disableFolioAnchors: function() {
-		// 	if (!bashar.lexicon.disabledAnchors) { return; }
-		// 	bashar.lexicon.disabledAnchors.forEach((anchor) => {
+		// 	if (!b.lexicon.disabledAnchors) { return; }
+		// 	b.lexicon.disabledAnchors.forEach((anchor) => {
 		// 		anchor.addEventListener("click", (event) => {
 		// 			event.preventDefault();
 		// 			event.target.closest(".indexOfWorks__work__folio").classList.toggle("generic--flipped");
@@ -142,13 +150,13 @@ const bashar = {
 
 		// },
 		// trackNotes: function() {
-		// 	window.addEventListener("resize", bashar.util.debounce(() => {
-		// 		bashar.main.checkOverlappingNotes();
+		// 	window.addEventListener("resize", b.util.debounce(() => {
+		// 		b.main.checkOverlappingNotes();
 		// 	}, 500));
 		// },
 		// checkOverlappingNotes: function() {
-		// 	if (bashar.util.queryMedia("(max-width: 1280px)")) {
-		// 		bashar.main.resetNoteOffsets();
+		// 	if (b.util.queryMedia("(max-width: 1280px)")) {
+		// 		b.main.resetNoteOffsets();
 		// 		return;
 		// 	}
 		// 	var previousNoteOffsetTop = 0;
@@ -156,7 +164,7 @@ const bashar = {
 		// 	var noteOffsetDelta = 0;
 		// 	var previousNoteOffsetDelta = 0;
 		// 	var continuityCounter = 0;
-		// 	bashar.lexicon.notes.forEach((note) => {
+		// 	b.lexicon.notes.forEach((note) => {
 		// 		let noteOffsetTop = note.getBoundingClientRect().top;
 		// 		let noteOffsetBottom = note.getBoundingClientRect().bottom;
 		// 		if (noteOffsetTop < previousNoteOffsetBottom) {
@@ -177,7 +185,7 @@ const bashar = {
 
 		// },
 		// resetNoteOffsets: function() {
-		// 	bashar.lexicon.notes.forEach((note) => {
+		// 	b.lexicon.notes.forEach((note) => {
 		// 		note.style.removeProperty("margin-top");
 		// 	});
 		// },
@@ -187,8 +195,8 @@ const bashar = {
 		// 	var noteOffsetDelta = 0;
 		// 	var previousNoteOffsetDelta = 0;
 		// 	var continuityCounter = 0;
-		// 	// if (bashar.util.queryMedia("(max-width: 1280px)")) { return; }
-		// 	bashar.lexicon.notes.forEach((note) => {
+		// 	// if (b.util.queryMedia("(max-width: 1280px)")) { return; }
+		// 	b.lexicon.notes.forEach((note) => {
 		// 		let noteOffsetTop = note.getBoundingClientRect().top;
 		// 		let noteOffsetBottom = note.getBoundingClientRect().bottom;
 		// 		if (noteOffsetTop < previousNoteOffsetBottom) {
@@ -210,17 +218,17 @@ const bashar = {
 	util: {
 		dTimer: 0,
 		debounce: function(callback, delay) {
-			clearTimeout(bashar.util.dTimer);
-			return bashar.util.dTimer = setTimeout(callback, delay);
+			clearTimeout(b.util.dTimer);
+			return b.util.dTimer = setTimeout(callback, delay);
 		},
 		tTimer: 0,
 		throttle: function(callback, delay) {
-			if (bashar.util.tTimer) { return; }
-			return bashar.util.tTimer = setTimeout(() => {
+			if (b.util.tTimer) { return; }
+			return b.util.tTimer = setTimeout(() => {
 				if (callback) {
 					callback();
 				}
-				bashar.util.tTimer = 0;
+				b.util.tTimer = 0;
 			}, delay);
 		},
 		clamp: function(min, number, max) {
@@ -249,4 +257,4 @@ const bashar = {
 
 }
 
-bashar.initAllScripts();
+b.initAllScripts();
